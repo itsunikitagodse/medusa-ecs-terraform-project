@@ -1,56 +1,39 @@
-name: Terraform Deployment
+name: CI/CD Pipeline
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
-  destroy:
+  build-and-deploy:
     runs-on: ubuntu-latest
-    environment: production
-    steps:
-      - uses: actions/checkout@v3
 
-      - name: Configure AWS credentials
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+         terraform_version: 1.8.3
+
+      - name: Setup AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Install Terraform
-        uses: hashicorp/setup-terraform@v2
+      - name: Build Docker Image
+        run: |
+          docker build -t medusa-app ./app
+          docker tag medusa-app:latest 815931044569.dkr.ecr.us-east-1.amazonaws.com/medusa:latest
+          aws ecr get-login-password | docker login --username AWS --password-stdin 815931044569.dkr.ecr.us-east-1.amazonaws.com
+          docker push 815931044569.dkr.ecr.us-east-1.amazonaws.com/medusa:latest
 
-      - name: Terraform Init
-        run: terraform init
-        working-directory: ./terraform
-
-      - name: Terraform Destroy
-        run: terraform destroy -auto-approve
-        working-directory: ./terraform
-
-  apply:
-    needs: destroy   # Waits for destroy to finish
-    runs-on: ubuntu-latest
-    environment: production
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
-      - name: Install Terraform
-        uses: hashicorp/setup-terraform@v2
-
-      - name: Terraform Init
-        run: terraform init
-        working-directory: ./terraform
-
-      - name: Terraform Apply
-        run: terraform apply -auto-approve
-        working-directory: ./terraform
+      - name: Deploy Terraform
+        working-directory: terraform
+        run: |
+          terraform destroy -auto-approve || true
+          terraform init
+          terraform apply -auto-approve
