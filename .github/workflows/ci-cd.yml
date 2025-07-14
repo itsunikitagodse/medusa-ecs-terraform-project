@@ -21,7 +21,7 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build -t medusa-ecs-terraform-project ./app
+          docker build -t medusa-app ./app
           docker tag medusa-app:latest 815931044569.dkr.ecr.us-east-1.amazonaws.com/medusa:latest
           aws ecr get-login-password | docker login --username AWS --password-stdin 815931044569.dkr.ecr.us-east-1.amazonaws.com
           docker push 815931044569.dkr.ecr.us-east-1.amazonaws.com/medusa:latest
