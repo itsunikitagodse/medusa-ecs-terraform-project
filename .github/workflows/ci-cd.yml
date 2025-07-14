@@ -34,6 +34,5 @@ jobs:
       - name: Deploy Terraform
         working-directory: terraform
         run: |
-          cd terraform
           terraform init
           terraform apply -auto-approve
