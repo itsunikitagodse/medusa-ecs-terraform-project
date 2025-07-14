@@ -28,7 +28,6 @@ jobs:
 
       - name: Deploy Terraform
         run: |
-          cd medusa-ecs-terraform-project
           cd terraform
           terraform init
           terraform apply -auto-approve
