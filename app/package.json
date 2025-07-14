@@ -1,0 +1,11 @@
+{
+  "name": "medusa-app",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "medusa develop"
+  },
+  "dependencies": {
+    "@medusajs/medusa": "^1.14.6"
+  }
+}
