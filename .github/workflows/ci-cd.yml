@@ -27,7 +27,7 @@ jobs:
           docker push 815931044569.dkr.ecr.us-east-1.amazonaws.com/medusa:latest
 
       - name: Deploy Terraform
+        working-directory: terraform
         run: |
-          cd terraform
           terraform init
           terraform apply -auto-approve
